@@ -13,9 +13,14 @@ export async function middleware(request) {
     const secret = new TextEncoder().encode(process.env.JWT_SECRET);
 
     try {
-        await jwtVerify(token, secret);
-        return NextResponse.next();
-    } catch (err) {
+        const { payload } = await jwtVerify(token, secret)
+        const res = NextResponse.next();
+
+        res.headers.set('userId',payload.userId)
+
+        return res;
+    }
+    catch (err) {
         return NextResponse.redirect(url);
     }
 }
