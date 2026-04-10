@@ -16,7 +16,7 @@ export async function middleware(request) {
         const { payload } = await jwtVerify(token, secret)
         const res = NextResponse.next();
 
-        res.headers.set('userId',payload.userId)
+        res.headers.set('userId', payload.userId)
 
         return res;
     }
@@ -26,5 +26,5 @@ export async function middleware(request) {
 }
 
 export const config = {
-    matcher: ['/dashboard'],
+    matcher: ['/dashboard', '/api/logs']
 };
