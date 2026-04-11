@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 
 export default function Dashboard() {
 
-    const [contents, setContent] = useState('');
+    const [content, setContent] = useState('');
     const [logs, setLogs] = useState([]);
 
     useEffect(() => {
@@ -16,12 +16,12 @@ export default function Dashboard() {
         try {
             const res = await fetch('/api/logs');
 
-            if (!res) {
+            if (!res.ok) {
                 return Response.json({ msg: "failed to fetch" })
             }
             console.log(res);
 
-            const data = res.json();
+            const data = await res.json();
             console.log(data);
             setLogs(data.logs)
         } catch (err) {
@@ -29,13 +29,44 @@ export default function Dashboard() {
         }
     }
 
+    async function handleSubmit() {
+
+        try {
+            const res = await fetch('/api/logs', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ content }),
+            });
+
+            if (!res.ok) {
+                throw new Error('Request failed ', res.status);
+            }
+
+            const data = await res.json();
+            console.log(data);
+
+            fetchLogs();
+            setContent('');
+
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+
     return (
         <div>
             <h1>Dashboard Page</h1>
 
             <div>
-                <input type="text" placeholder="log" value={contents} onChange={(e) => setContent(e.target.value)} />
+                <input type="text" placeholder="log" value={content} onChange={(e) => setContent(e.target.value)} />
             </div>
+
+            <button onClick={handleSubmit}>
+                Submit
+            </button>
 
 
 
