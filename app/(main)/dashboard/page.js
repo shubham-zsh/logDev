@@ -1,11 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function Dashboard() {
 
     const [content, setContent] = useState('');
     const [logs, setLogs] = useState([]);
+
+    const router = useRouter();
 
     useEffect(() => {
         fetchLogs()
@@ -16,13 +19,18 @@ export default function Dashboard() {
         try {
             const res = await fetch('/api/logs');
 
+            if (res.redirected) {
+                router.push('/login');
+                return;
+            }
+
             if (!res.ok) {
                 return Response.json({ msg: "failed to fetch" })
             }
             console.log(res);
 
             const data = await res.json();
-            console.log(data);
+            console.log("fetch res data...", data);
             setLogs(data.logs)
         } catch (err) {
             console.error("error", err);
@@ -45,7 +53,11 @@ export default function Dashboard() {
             }
 
             const data = await res.json();
-            console.log(data);
+            console.log("response data...", data);
+
+            if (res.redirected) {
+                router.push('/login')
+            }
 
             fetchLogs();
             setContent('');
