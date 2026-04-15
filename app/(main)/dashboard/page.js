@@ -11,26 +11,44 @@ export default function Dashboard() {
     const router = useRouter();
 
     useEffect(() => {
-        fetchLogs()
-    }, []);
+        async function loadLogs() {
+            try {
+                const res = await fetch('/api/logs');
+
+                if (res.status === 401) {
+                    router.push('/login');
+                    return;
+                }
+
+                if (!res.ok) {
+                    throw new Error('Failed to fetch logs');
+                }
+
+                const data = await res.json();
+                setLogs(data.logs)
+            } catch (err) {
+                console.error("error", err);
+            }
+        }
+
+        loadLogs();
+    }, [router]);
 
     async function fetchLogs() {
 
         try {
             const res = await fetch('/api/logs');
 
-            if (res.redirected) {
+            if (res.status === 401) {
                 router.push('/login');
                 return;
             }
 
             if (!res.ok) {
-                return Response.json({ msg: "failed to fetch" })
+                throw new Error('Failed to fetch logs');
             }
-            console.log(res);
 
             const data = await res.json();
-            console.log("fetch res data...", data);
             setLogs(data.logs)
         } catch (err) {
             console.error("error", err);
@@ -48,16 +66,16 @@ export default function Dashboard() {
                 body: JSON.stringify({ content }),
             });
 
+            if (res.status === 401) {
+                router.push('/login');
+                return;
+            }
+
             if (!res.ok) {
-                throw new Error('Request failed ', res.status);
+                throw new Error('Request failed');
             }
 
-            const data = await res.json();
-            console.log("response data...", data);
-
-            if (res.redirected) {
-                router.push('/login')
-            }
+            await res.json();
 
             fetchLogs();
             setContent('');
