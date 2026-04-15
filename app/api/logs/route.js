@@ -1,12 +1,18 @@
 import prisma from "@/lib/prisma";
+import { getAuthFromRequest, unauthorizedJson } from "@/lib/auth";
 
 export async function POST(request) {
     try {
+        const auth = await getAuthFromRequest(request);
+
+        if (!auth) {
+            return unauthorizedJson();
+        }
+
         const { content } = await request.json();
-        const userId = parseInt(request.headers.get("userId"));
 
         const log = await prisma.log.create({
-            data: { content, userId },
+            data: { content, userId: auth.userId },
         });
 
         console.log(log);
@@ -19,10 +25,14 @@ export async function POST(request) {
 
 export async function GET(request) {
     try {
-        const userId = parseInt(request.headers.get("userId"));
+        const auth = await getAuthFromRequest(request);
+
+        if (!auth) {
+            return unauthorizedJson();
+        }
 
         const logs = await prisma.log.findMany({
-            where: { userId },
+            where: { userId: auth.userId },
         });
 
         return Response.json({ logs }, { status: 200 });
