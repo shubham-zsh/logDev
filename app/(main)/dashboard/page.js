@@ -11,27 +11,7 @@ export default function Dashboard() {
     const router = useRouter();
 
     useEffect(() => {
-        async function loadLogs() {
-            try {
-                const res = await fetch('/api/logs');
-
-                if (res.status === 401) {
-                    router.push('/login');
-                    return;
-                }
-
-                if (!res.ok) {
-                    throw new Error('Failed to fetch logs');
-                }
-
-                const data = await res.json();
-                setLogs(data.logs)
-            } catch (err) {
-                console.error("error", err);
-            }
-        }
-
-        loadLogs();
+        fetchLogs()
     }, [router]);
 
     async function fetchLogs() {
